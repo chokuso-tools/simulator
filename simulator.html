@@ -207,7 +207,7 @@ function calc() {
     nameEl.innerHTML = "<strong>" + sku.name + "</strong><span style='font-size:11px;color:#999'>" + (sku.isCool ? "❄️ クール便" : "📦 常温便") + " / " + sku.size + "サイズ（税込）</span>";
     block.appendChild(nameEl);
     const table = document.createElement("table"); table.className = "result-table";
-    table.innerHTML = "<thead><tr><th>エリア</th><th>送料</th><th>" + (mode === "forward" ? "販売価格" : "必要販売価格") + "</th><th><span class='tag-c'>本体サイト経由</span> 手取額</th><th><span class='tag-m'>楽天等モール経由</span> 手取額</th></tr></thead>";
+    table.innerHTML = "<thead><tr><th>エリア</th><th>送料</th><th>" + (mode === "forward" ? "販売価格" : "必要販売価格") + "</th><th><span class='tag-c'>本体サイト経由</span><br>手取額</th><th><span class='tag-m'>楽天等経由</span><br>手取額</th></tr></thead>";
     const tbody = document.createElement("tbody");
     AREAS.forEach(area => {
       const s = ship[area.key];
