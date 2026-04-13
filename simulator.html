@@ -203,7 +203,7 @@ function calc() {
     const tbl = sku.isCool ? SHIP_COOL : SHIP_NORMAL, ship = tbl[sku.size] || tbl["60"];
     const block = document.createElement("div"); block.className = "result-sku-block";
     const nameEl = document.createElement("div"); nameEl.className = "result-sku-name";
-    nameEl.innerHTML = "<strong>" + sku.name + "</strong><span style='font-size:11px;color:#999'>" + (sku.isCool ? "❄️ クール便" : "📦 常温便") + " / " + sku.size + "サイズ</span>";
+    nameEl.innerHTML = "<strong>" + sku.name + "</strong><span style='font-size:11px;color:#999'>" + (sku.isCool ? "❄️ クール便" : "📦 常温便") + " / " + sku.size + "サイズ（税込・送料込）</span>";
     block.appendChild(nameEl);
     const table = document.createElement("table"); table.className = "result-table";
     table.innerHTML = "<thead><tr><th>エリア</th><th>送料</th><th>" + (mode === "forward" ? "販売価格" : "必要販売価格") + "</th><th><span class='tag-c'>本体サイト経由</span> 手取額</th><th><span class='tag-m'>楽天等モール経由</span> 手取額</th></tr></thead>";
@@ -295,7 +295,7 @@ function doPdf() {
     skuBlocks += `
       <div class="sku-block">
         <div class="sku-title">${idx+1}. ${sku.name}
-          <span class="sku-sub">${sku.isCool ? "❄️ クール便" : "常温便"} / ${sku.size}サイズ / 販売価格 ${sku.price.toLocaleString()}円</span>
+          <span class="sku-sub">${sku.isCool ? "❄️ クール便" : "常温便"} / ${sku.size}サイズ / 販売価格 ${sku.price.toLocaleString()}円（税込・送料込）</span>
         </div>
         <table>
           <thead>
@@ -314,7 +314,7 @@ function doPdf() {
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>振込価格表_${shop}</title>
+<title>新潟直送計画 振込価格表_${shop}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif; font-size: 10pt; color: #000000; padding: 16px; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; }
@@ -322,7 +322,7 @@ function doPdf() {
   .meta { font-size: 10pt; color: #000000; margin-bottom: 14px; line-height: 1.8; font-weight: bold; }
   .sku-block { margin-bottom: 16px; }
   .sku-title { font-size: 11pt; font-weight: bold; color: #000000; margin-bottom: 5px; }
-  .sku-sub { font-size: 11pt; font-weight: bold; color: #000000; margin-left: 8px; }
+  .sku-sub { font-size: 13pt; font-weight: bold; color: #000000; margin-left: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 9pt; table-layout: fixed; font-weight: bold; }
   th { background-color: #185FA5; color: #ffffff; padding: 5px 3px; text-align: center; border: 1px solid #185FA5; font-size: 8pt; font-weight: bold; white-space: nowrap; }
   td { padding: 5px 3px; border: 1px solid #666666; text-align: right; color: #000000; font-weight: bold; }
@@ -348,7 +348,7 @@ function doPdf() {
 </div>
 ${skuBlocks}
 <div class="footer">
-  ※ 本体サイト経由（直送計画）手数料20% / 楽天等モール経由 手数料25%<br>
+  ※ 販売価格はすべて税込・送料込の価格です。<br>  ※ 本体サイト経由（直送計画）手数料20% / 楽天等モール経由 手数料25%<br>
   ※ 赤字は振込手数料（151円）を下回るケース
 </div>
 <script>window.onload = function(){ window.print(); }<\/script>
