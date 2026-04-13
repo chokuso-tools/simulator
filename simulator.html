@@ -111,7 +111,7 @@ function setMode(m) {
   mode = m;
   document.getElementById("btn-f").classList.toggle("active", m === "forward");
   document.getElementById("btn-r").classList.toggle("active", m === "reverse");
-  document.querySelectorAll(".price-label").forEach(el => el.textContent = m === "forward" ? "販売価格（円）" : "手取額目標（円）");
+  document.querySelectorAll(".price-label").forEach(el => el.textContent = m === "forward" ? "販売価格（円／税込・送料込）" : "手取額目標（円／税込）");
   calc();
 }
 
