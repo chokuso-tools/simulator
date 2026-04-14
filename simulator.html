@@ -490,16 +490,30 @@ function loadCsv(input) {
     let text = e.target.result;
     // BOM除去
     if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    // 文字化け検出（UTF-8で読んで「?」や置換文字が多い場合はShift-JISで再試行）
+    if ((text.match(/�/g) || []).length > 3) {
+      const r2 = new FileReader();
+      r2.onload = function(e2) {
+        let t2 = e2.target.result;
+        if (t2.charCodeAt(0) === 0xFEFF) t2 = t2.slice(1);
+        processCsv(t2);
+      };
+      r2.readAsText(reader._file, "Shift-JIS");
+      return;
+    }
+    processCsv(text);
+  };
+  function processCsv(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     if (lines.length < 2) { alert("データが見つかりません"); return; }
 
     // ヘッダー解析
     const headers = parseCsvLine(lines[0]);
-    const idxCode  = headers.findIndex(h => h.includes("SKUコード") || h.includes("sku") || h.toLowerCase().includes("code"));
-    const idxName  = headers.findIndex(h => h.includes("SKU表示名") || h.includes("商品名") || h.includes("name"));
-    const idxPrice = headers.findIndex(h => h.includes("売価") || h.includes("価格") || h.includes("price"));
-    const idxTemp  = headers.findIndex(h => h.includes("温度帯") || h.includes("配送"));
-    const idxSize  = headers.findIndex(h => h.includes("サイズ") || h.includes("size"));
+    const idxCode  = headers.findIndex(h => h.includes("SKUコード") || h.includes("コード") || h.includes("sku") || h.toLowerCase().includes("code") || h.includes("品番") || h.includes("商品番号"));
+    const idxName  = headers.findIndex(h => h.includes("SKU表示名") || h.includes("商品名") || h.includes("SKU名") || h.includes("name") || h.includes("品名") || h.includes("表示名"));
+    const idxPrice = headers.findIndex(h => h.includes("売価") || h.includes("販売価格") || h.includes("価格") || h.includes("price") || h.includes("金額") || h.includes("単価"));
+    const idxTemp  = headers.findIndex(h => h.includes("温度帯") || h.includes("配送") || h.includes("便種") || h.includes("温度") || h.includes("冷蔵") || h.includes("クール"));
+    const idxSize  = headers.findIndex(h => h.includes("サイズ") || h.includes("size") || h.includes("梱包") || h.includes("箱"));
 
     if (idxName < 0 || idxPrice < 0) {
       alert("SKU表示名・売価の列が見つかりません。\nCSVの列名を確認してください。");
@@ -543,8 +557,10 @@ function loadCsv(input) {
     }
     alert(added + " 件のSKUを読み込みました。");
     input.value = "";
-  };
-  reader.readAsText(file, "Shift-JIS");
+  }
+  // まずUTF-8で試みて、文字化けしていたらShift-JISで再読み込み
+  reader.readAsText(file, "UTF-8");
+  reader._file = file;
 }
 
 function parseCsvLine(line) {
