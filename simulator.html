@@ -331,9 +331,9 @@ function doPdf() {
   body { font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif; font-size: 10pt; color: #000000; padding: 16px; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; }
   h1 { font-size: 14pt; font-weight: bold; color: #185FA5; border-bottom: 2px solid #185FA5; padding-bottom: 6px; margin-bottom: 10px; }
   .meta { font-size: 10pt; color: #000000; margin-bottom: 14px; line-height: 1.8; font-weight: bold; }
-  .sku-block { margin-bottom: 16px; }
-  .sku-title { font-size: 11pt; font-weight: bold; color: #000000; margin-bottom: 5px; }
-  .sku-sub { font-size: 13pt; font-weight: bold; color: #000000; margin-left: 8px; }
+  .sku-block { margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid; }
+  .sku-title { font-size: 11pt; font-weight: bold; color: #000000; margin-bottom: 5px; word-break: break-all; line-height: 1.5; }
+  .sku-sub { font-size: 11pt; font-weight: bold; color: #000000; margin-left: 0; display: block; margin-top: 2px; }
   table { width: 100%; border-collapse: collapse; font-size: 9pt; table-layout: fixed; font-weight: bold; }
   th { background-color: #185FA5; color: #ffffff; padding: 5px 3px; text-align: center; border: 1px solid #185FA5; font-size: 8pt; font-weight: bold; white-space: nowrap; }
   td { padding: 5px 3px; border: 1px solid #666666; text-align: right; color: #000000; font-weight: bold; }
