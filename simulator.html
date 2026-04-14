@@ -342,6 +342,13 @@ function doPdf() {
   td.choku { background-color: #C6D9A0; color: #000000; font-weight: bold; }
   td.mall { background-color: #FFFF99; color: #000000; font-weight: bold; }
   td.warn { background-color: #FF9999; color: #880000; font-weight: bold; }
+  .summary-page { page-break-after: always; }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 11pt; margin-top: 12px; }
+  .summary-table th { background-color: #185FA5; color: #fff; padding: 7px 8px; font-weight: bold; border: 1px solid #185FA5; }
+  .summary-table td { padding: 7px 8px; border: 1px solid #aaaaaa; font-weight: bold; color: #000; }
+  .summary-table tr:nth-child(even) td { background-color: #f5f7fa; }
+  .summary-note { font-size: 9pt; color: #555; margin-top: 10px; }
+  .detail-page { }
   .footer { font-size: 8pt; color: #000000; font-weight: bold; margin-top: 10px; border-top: 1px solid #666666; padding-top: 5px; }
   @media print {
     body { padding: 0; }
@@ -350,14 +357,45 @@ function doPdf() {
 </style>
 </head>
 <body>
-<h1>振込価格表</h1>
-<div class="meta">
-  <strong>店舗名：</strong>${shop}　
-  ${email ? `<strong>メール：</strong>${email}　` : ""}
-  <strong>作成日時：</strong>${now}
-  ${comment ? `<br><strong>備考：</strong>${comment}` : ""}
+
+<!-- 1枚目：簡易一覧表 -->
+<div class="summary-page">
+  <h1>振込価格表</h1>
+  <div class="meta">
+    <strong>店舗名：</strong>${shop}　
+    ${email ? `<strong>メール：</strong>${email}　` : ""}
+    <strong>作成日時：</strong>${now}
+    ${comment ? `<br><strong>備考：</strong>${comment}` : ""}
+  </div>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th style="width:120px">SKUコード</th>
+        <th>SKU名</th>
+        <th style="width:100px">販売価格（税込）</th>
+        <th style="width:70px">便種</th>
+        <th style="width:60px">サイズ</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${skus.map(sku => `
+        <tr>
+          <td style="text-align:center">${sku.code || "-"}</td>
+          <td>${sku.name}</td>
+          <td style="text-align:right">${sku.price.toLocaleString()}円</td>
+          <td style="text-align:center">${sku.isCool ? "❄️ クール" : "常温"}</td>
+          <td style="text-align:center">${sku.size}サイズ</td>
+        </tr>`).join("")}
+    </tbody>
+  </table>
+  <p class="summary-note">※ 詳細なエリア別手取額は次ページ以降をご確認ください。</p>
 </div>
+
+<!-- 2枚目以降：エリア別詳細 -->
+<div class="detail-page">
+<h2 style="font-size:13pt;font-weight:bold;color:#000;margin-bottom:10px;border-bottom:1px solid #aaa;padding-bottom:4px;">エリア別手取額 詳細</h2>
 ${skuBlocks}
+</div>
 <div class="footer">
   ※ 表示価格はすべて税込です。<br>  ※ 本体サイト経由（直送計画）手数料20% / 楽天等モール経由 手数料25%<br>
   ※ 赤字は振込手数料（151円）を下回るケース
