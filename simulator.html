@@ -136,8 +136,9 @@ function addSku() {
     '<input type="number" placeholder="例：3950" id="sprice-' + id + '" min="10" step="10" oninput="onPriceInput(' + id + ')" required>' +
     '<div class="price-err" id="perr-' + id + '"></div></div>' +
     '<div class="field"><label>配送タイプ<span class="req">*</span></label>' +
-    '<div class="cool-toggle"><button class="cool-btn active" id="btn-normal-' + id + '" onclick="setCool(' + id + ',false)">常温便</button>' +
-    '<button class="cool-btn" id="btn-cool-' + id + '" onclick="setCool(' + id + ',true)">❄️ クール便</button></div></div>' +
+    '<div class="cool-toggle"><button class="cool-btn active" id="btn-normal-' + id + '" onclick="setDelivery(' + id + ',''normal'')">常温</button>' +
+    '<button class="cool-btn" id="btn-reizo-' + id + '" onclick="setDelivery(' + id + ',''reizo'')">冷蔵</button>' +
+    '<button class="cool-btn" id="btn-reito-' + id + '" onclick="setDelivery(' + id + ',''reito'')">冷凍</button></div></div>' +
     '<div class="field"><label>梱包サイズ<span class="req">*</span></label>' +
     '<select id="ssize-' + id + '" onchange="onPriceInput(' + id + ')">' +
     '<option value="60">60サイズ</option><option value="80">80サイズ</option><option value="100">100サイズ</option>' +
@@ -148,12 +149,20 @@ function addSku() {
 }
 
 function setCool(id, c) {
-  const card = document.getElementById("sku-" + id); card._isCool = c;
-  document.getElementById("btn-normal-" + id).classList.toggle("active", !c);
-  document.getElementById("btn-cool-" + id).classList.toggle("active", c);
+  setDelivery(id, c ? "reizo" : "normal");
+}
+function setDelivery(id, type) {
+  const card = document.getElementById("sku-" + id);
+  card._deliveryType = type;
+  card._isCool = (type === "reizo" || type === "reito");
+  ["normal","reizo","reito"].forEach(t => {
+    const btn = document.getElementById("btn-" + t + "-" + id);
+    if (btn) btn.classList.toggle("active", t === type);
+  });
   const sel = document.getElementById("ssize-" + id);
-  for (let o of sel.options) o.disabled = c && (o.value === "140" || o.value === "160");
-  if (c && (sel.value === "140" || sel.value === "160")) sel.value = "120";
+  const isCool = card._isCool;
+  for (let o of sel.options) o.disabled = isCool && (o.value === "140" || o.value === "160");
+  if (isCool && (sel.value === "140" || sel.value === "160")) sel.value = "120";
   onPriceInput(id);
 }
 
@@ -185,7 +194,7 @@ function getSkus() {
   return Array.from(document.querySelectorAll("#sku-list .sku-card")).map(card => {
     const id = card.id.replace("sku-", "");
     const codeEl = document.getElementById("scode-" + id);
-    return { id, code: codeEl ? codeEl.value : "", name: document.getElementById("sname-" + id).value, price: parseFloat(document.getElementById("sprice-" + id).value), isCool: card._isCool || false, size: document.getElementById("ssize-" + id).value };
+    const dtype = card._deliveryType || "normal"; const dlabel = dtype === "reizo" ? "冷蔵" : dtype === "reito" ? "冷凍" : "常温"; return { id, code: codeEl ? codeEl.value : "", name: document.getElementById("sname-" + id).value, price: parseFloat(document.getElementById("sprice-" + id).value), isCool: card._isCool || false, size: document.getElementById("ssize-" + id).value, deliveryLabel: dlabel };
   }).filter(s => s.name && s.price > 0 && s.price % 10 === 0);
 }
 function getAllSkuCards() {
@@ -213,7 +222,7 @@ function calc() {
     const tbl = sku.isCool ? SHIP_COOL : SHIP_NORMAL, ship = tbl[sku.size] || tbl["60"];
     const block = document.createElement("div"); block.className = "result-sku-block";
     const nameEl = document.createElement("div"); nameEl.className = "result-sku-name";
-    nameEl.innerHTML = "<strong>" + sku.name + "</strong><span style='font-size:11px;color:#999'>" + (sku.isCool ? "❄️ クール便" : "📦 常温便") + " / " + sku.size + "サイズ（税込）</span>";
+    nameEl.innerHTML = "<strong>" + sku.name + "</strong><span style='font-size:11px;color:#999'>" + sku.deliveryLabel + " / " + sku.size + "サイズ（税込）</span>";
     block.appendChild(nameEl);
     const table = document.createElement("table"); table.className = "result-table";
     table.innerHTML = "<thead><tr><th>エリア</th><th>送料</th><th>" + (mode === "forward" ? "販売価格" : "必要販売価格") + "</th><th><span class='tag-c'>本体サイト経由</span><br>手取額</th><th><span class='tag-m'>楽天等経由</span><br>手取額</th></tr></thead>";
@@ -306,7 +315,7 @@ function doPdf() {
     skuBlocks += `
       <div class="sku-block">
         <div class="sku-title">${idx+1}. ${sku.name}${sku.code ? ' <span style="font-size:9pt;font-weight:normal;color:#333">［' + sku.code + '］</span>' : ''}
-          <span class="sku-sub">${sku.isCool ? "❄️ クール便" : "常温便"} / ${sku.size}サイズ / 販売価格 ${sku.price.toLocaleString()}円（税込・送料込）</span>
+          <span class="sku-sub">${sku.deliveryLabel} / ${sku.size}サイズ / 販売価格 ${sku.price.toLocaleString()}円（税込・送料込）</span>
         </div>
         <table>
           <thead>
@@ -343,9 +352,9 @@ function doPdf() {
   td.mall { background-color: #FFFF99; color: #000000; font-weight: bold; }
   td.warn { background-color: #FF9999; color: #880000; font-weight: bold; }
   .summary-page { page-break-after: always; }
-  .summary-table { width: 100%; border-collapse: collapse; font-size: 11pt; margin-top: 12px; }
-  .summary-table th { background-color: #185FA5; color: #fff; padding: 7px 8px; font-weight: bold; border: 1px solid #185FA5; }
-  .summary-table td { padding: 7px 8px; border: 1px solid #aaaaaa; font-weight: bold; color: #000; }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-top: 8px; }
+  .summary-table th { background-color: #185FA5; color: #fff; padding: 4px 6px; font-weight: bold; border: 1px solid #185FA5; font-size: 8pt; }
+  .summary-table td { padding: 4px 6px; border: 1px solid #aaaaaa; font-weight: bold; color: #000; }
   .summary-table tr:nth-child(even) td { background-color: #f5f7fa; }
   .summary-note { font-size: 9pt; color: #555; margin-top: 10px; }
   .detail-page { }
@@ -370,21 +379,21 @@ function doPdf() {
   <table class="summary-table">
     <thead>
       <tr>
-        <th style="width:120px">SKUコード</th>
-        <th>SKU名</th>
-        <th style="width:100px">販売価格（税込）</th>
-        <th style="width:70px">便種</th>
-        <th style="width:60px">サイズ</th>
+        <th style="width:110px">SKUコード</th>
+        <th style="text-align:left">SKU名</th>
+        <th style="width:90px">販売価格（税込）</th>
+        <th style="width:55px">便種</th>
+        <th style="width:40px">サイズ</th>
       </tr>
     </thead>
     <tbody>
       ${skus.map(sku => `
         <tr>
           <td style="text-align:center">${sku.code || "-"}</td>
-          <td>${sku.name}</td>
+          <td style="text-align:left">${sku.name}</td>
           <td style="text-align:right">${sku.price.toLocaleString()}円</td>
-          <td style="text-align:center">${sku.isCool ? "❄️ クール" : "常温"}</td>
-          <td style="text-align:center">${sku.size}サイズ</td>
+          <td style="text-align:center">${sku.deliveryLabel || (sku.isCool ? "クール" : "常温")}</td>
+          <td style="text-align:center">${sku.size}</td>
         </tr>`).join("")}
     </tbody>
   </table>
@@ -520,8 +529,8 @@ function loadCsv(input) {
       if (document.getElementById("scode-" + id)) document.getElementById("scode-" + id).value = code;
 
       // 温度帯設定
-      const isCool = temp.includes("クール") || temp.toLowerCase().includes("cool");
-      if (isCool) setCool(id, true);
+      const isReito = temp.includes("冷凍"); const isReizo = temp.includes("冷蔵"); const isCool = isReizo || isReito;
+      if (isReito) setDelivery(id, 'reito'); else if (isReizo) setDelivery(id, 'reizo');
 
       // サイズ設定
       const validSizes = ["60","80","100","120","140","160"];
