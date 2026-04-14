@@ -68,10 +68,7 @@ input:focus,select:focus{border-color:#185FA5;}
 <body>
 <h2>新潟直送計画 振込価格シミュレーター</h2>
 
-<div class="toggle">
-  <button class="toggle-btn active" id="btn-f" onclick="setMode('forward')">販売価格 → 手取額計算</button>
-  <button class="toggle-btn" id="btn-r" onclick="setMode('reverse')">手取額目標 → 販売価格を逆算</button>
-</div>
+
 
 <div class="card">
   <div class="sec">基本情報</div>
@@ -115,13 +112,7 @@ const AREAS = [{key:"avg",label:"平均（全国）"},{key:"south",label:"南東
 const MIN_TENOKOR = 151;
 let mode = "forward", skuCount = 0;
 
-function setMode(m) {
-  mode = m;
-  document.getElementById("btn-f").classList.toggle("active", m === "forward");
-  document.getElementById("btn-r").classList.toggle("active", m === "reverse");
-  document.querySelectorAll(".price-label").forEach(el => el.textContent = m === "forward" ? "販売価格（円）" : "手取額目標（円）");
-  calc();
-}
+
 
 function addSku() {
   skuCount++; const id = skuCount;
@@ -132,7 +123,7 @@ function addSku() {
     '<div class="sku-grid">' +
     '<div class="field" style="grid-column:1/-1;"><label>SKU名<span class="req">*</span></label><input type="text" placeholder="例：直送農園 米2kg" id="sname-' + id + '" oninput="calc()"></div>' +
     '<div class="field" style="grid-column:1/-1;"><label>SKUコード</label><input type="text" placeholder="例：0039-001-08" id="scode-' + id + '"></div>' +
-    '<div class="field"><label class="price-label">' + (mode === "forward" ? "販売価格（円）" : "手取額目標（円）") + '<span class="req">*</span></label>' +
+    '<div class="field"><label>販売価格（円／税込）<span class="req">*</span></label>' +
     '<input type="number" placeholder="例：3950" id="sprice-' + id + '" min="10" step="10" oninput="onPriceInput(' + id + ')" required>' +
     '<div class="price-err" id="perr-' + id + '"></div></div>' +
     '<div class="field"><label>配送タイプ<span class="req">*</span></label>' +
@@ -225,13 +216,12 @@ function calc() {
     nameEl.innerHTML = "<strong>" + sku.name + "</strong><span style='font-size:11px;color:#999'>" + sku.deliveryLabel + " / " + sku.size + "サイズ（税込）</span>";
     block.appendChild(nameEl);
     const table = document.createElement("table"); table.className = "result-table";
-    table.innerHTML = "<thead><tr><th>エリア</th><th>送料</th><th>" + (mode === "forward" ? "販売価格" : "必要販売価格") + "</th><th><span class='tag-c'>本体サイト経由</span><br>手取額</th><th><span class='tag-m'>楽天等経由</span><br>手取額</th></tr></thead>";
+    table.innerHTML = "<thead><tr><th>エリア</th><th>送料</th><th>販売価格</th><th><span class='tag-c'>本体サイト経由</span><br>手取額</th><th><span class='tag-m'>楽天等経由</span><br>手取額</th></tr></thead>";
     const tbody = document.createElement("tbody");
     AREAS.forEach(area => {
       const s = ship[area.key];
       let c, m, priceDisp;
-      if (mode === "forward") { c = sku.price * 0.8 - s; m = sku.price * 0.75 - s; priceDisp = fmt(sku.price); }
-      else { c = (sku.price + s) / 0.8; m = (sku.price + s) / 0.75; priceDisp = fmt(Math.ceil(m / 10) * 10); }
+      c = sku.price * 0.8 - s; m = sku.price * 0.75 - s; priceDisp = fmt(sku.price);
       if (c < MIN_TENOKOR || m < MIN_TENOKOR) anyWarn = true;
       const tr = document.createElement("tr");
       if (area.key === "avg") tr.className = "avg-row";
